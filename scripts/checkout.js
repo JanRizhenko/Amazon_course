@@ -31,7 +31,11 @@ function renderCartItems() {
               <span>
                 Quantity: <span class="quantity-label">${cartItem.quantity}</span>
               </span>
-              <span class="update-quantity-link link-primary">Update</span>
+              
+              <span class="link-primary js-update-link" data-product-id="${product.id}">Update</span>
+              <input class="quantity-input js-quantity-input" data-product-id="${product.id}" type="number" min="1" value="${cartItem.quantity}">
+              <span class="link-primary save-quantity-link js-save-link" data-product-id="${product.id}">Save</span>
+              
               <span class="delete-quantity-link link-primary js-delete-link" data-product-id="${product.id}">
                 Delete
               </span>
@@ -70,9 +74,45 @@ function renderCartItems() {
     document.querySelector('.js-order-summary').innerHTML = cartSummaryHTML;
 
     attachDeleteListeners();
+    attachUpdateListeners();
+    attachSaveListeners()
     attachDeliveryOptionListeners();
     updateSummaryTotals();
 }
+
+function attachUpdateListeners() {
+    document.querySelectorAll('.js-update-link').forEach((button) => {
+        button.addEventListener('click', () => {
+            const productId = button.dataset.productId;
+            const input = document.querySelector(`.js-quantity-input[data-product-id="${productId}"]`);
+            const saveLink = document.querySelector(`.js-save-link[data-product-id="${productId}"]`);
+
+            input.style.display = 'inline-block';
+            saveLink.style.display = 'inline-block';
+            button.style.display = 'none';
+        });
+    });
+}
+
+function attachSaveListeners() {
+    document.querySelectorAll('.js-save-link').forEach((button) => {
+        button.addEventListener('click', () => {
+            const productId = button.dataset.productId;
+            const input = document.querySelector(`.js-quantity-input[data-product-id="${productId}"]`);
+            const newQuantity = parseInt(input.value);
+
+            if (!isNaN(newQuantity) && newQuantity > 0) {
+                const cartItem = cart.find(item => item.productId === productId);
+                if (cartItem) {
+                    cartItem.quantity = newQuantity;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCartItems();
+                }
+            }
+        });
+    });
+}
+
 
 function attachDeleteListeners() {
     document.querySelectorAll('.js-delete-link').forEach((button) => {
